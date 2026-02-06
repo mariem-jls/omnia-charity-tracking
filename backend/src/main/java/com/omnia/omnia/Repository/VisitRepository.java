@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,4 +26,10 @@ public interface VisitRepository extends JpaRepository<Visit, UUID> {
 
     // Visites non synchronisées (pour mode hors-ligne)
     List<Visit> findBySyncedFalse();
+
+    Object findTop5ByOrderByVisitDateDesc();
+
+    Collection<Object> findByVisitDate(LocalDate today);
+
+    Collection<Object> findByNextVisitDateBetween(LocalDate today, LocalDate nextWeek);
 }
