@@ -26,10 +26,10 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getFamilyStats(familyId));
     }
 
-    @GetMapping("/map")
-    public ResponseEntity<?> getMapStats() {
-        return ResponseEntity.ok(dashboardService.getMapStats());
-    }
+//    @GetMapping("/map")
+//    public ResponseEntity<?> getMapStats() {
+//        return ResponseEntity.ok(dashboardService.getMapStats());
+//    }
 
     @GetMapping("/aid-stats")
     public ResponseEntity<?> getAidStats() {
