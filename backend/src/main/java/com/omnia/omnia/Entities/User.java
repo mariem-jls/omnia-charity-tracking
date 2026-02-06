@@ -1,8 +1,9 @@
 package com.omnia.omnia.Entities;
 
-
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -33,18 +34,19 @@ public class User {
     private String phone;
 
     @Column(nullable = false)
-    private String password; // En production : hashé
+    private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private Role role = Role.Volunteer;
+    private Role role = Role.Volunteer;  // ← MAJUSCULES
 
     @Builder.Default
     private Boolean active = true;
 
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreationTimestamp  // ← Génère automatiquement la date
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     private LocalDateTime lastLoginAt;
 }
