@@ -1,29 +1,57 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { StatsCardComponent } from '../stats-card/stats-card.component';
-import { RecentActivitiesComponent } from '../recent-activities/recent-activities.component';
 import { DashboardService } from '../../services/dashboard.service';
-import { Statistic, DashboardSummary } from '../../models/dashboard.model';
+import { Statistic } from '../../models/dashboard.model';
 
 @Component({
   selector: 'app-dashboard-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, StatsCardComponent, RecentActivitiesComponent],
-  templateUrl: './dashboard-home.component.html',  // ← Fichier HTML externe
-  styleUrls: ['./dashboard-home.component.css']    // ← Fichier CSS externe
+  imports: [CommonModule, RouterModule, StatsCardComponent],
+  templateUrl: './dashboard-home.component.html',
+  styleUrls: ['./dashboard-home.component.css']
 })
-export class DashboardHomeComponent implements OnInit {
+export class DashboardHomeComponent implements OnInit, AfterViewInit, OnDestroy {
   statistics: Statistic[] = [];
   private monthlyChart?: Chart;
-  private distributionChart?: Chart;
   currentDate = new Date();
   
-  // Données pour les événements et familles (à ajouter)
-  upcomingEvents: any[] = [];
-  recentFamilies: any[] = [];
-  distributionItems: any[] = [];
+  // Données supplémentaires
+  upcomingEvents = [
+    {
+      title: 'Distribution alimentaire Nord',
+      date: new Date(),
+      time: '09:00 - 12:00',
+      location: 'Centre communautaire Nord',
+      status: 'confirmed'
+    },
+    {
+      title: 'Réunion des bénévoles',
+      date: new Date(Date.now() + 86400000),
+      time: '14:30 - 16:00',
+      location: 'Siège OMNIA',
+      status: 'planned'
+    },
+    {
+      title: 'Collecte de fonds mensuelle',
+      date: new Date(Date.now() + 2 * 86400000),
+      time: '10:00 - 18:00',
+      location: 'Centre-ville',
+      status: 'planned'
+    }
+  ];
+  
+  // Stats rapides
+  totalFamilies = 156;
+  totalDonations = 125000;
+  annualTotal = 285000;
+  growthRate = 18.5;
+  pendingFamilies = 12;
+  urgentNeeds = 7;
+  completedDistributions = 43;
+  activeVolunteers = 28;
 
   constructor(
     private dashboardService: DashboardService,
@@ -34,143 +62,225 @@ export class DashboardHomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadStatistics();
-    
-    // Charger les graphiques seulement dans le navigateur
+    this.loadUpcomingEvents();
+  }
+
+  ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.loadCharts();
+      this.initChart();
     }
-    
-    this.loadMockData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyChart();
   }
 
   private loadStatistics(): void {
     this.statistics = this.dashboardService.getStatistics();
   }
 
-  private loadCharts(): void {
-    // Attendre que le DOM soit prêt
+  private loadUpcomingEvents(): void {
+    // Simulation de chargement d'événements depuis le service
+    this.upcomingEvents = this.upcomingEvents.map(event => ({
+      ...event,
+      formattedDate: this.formatEventDate(event.date)
+    }));
+  }
+
+  private initChart(): void {
     setTimeout(() => {
-      this.dashboardService.getDashboardSummary().subscribe(summary => {
-        if (summary.monthlyDonations) {
-          this.createMonthlyDonationsChart(summary.monthlyDonations);
-        }
-        if (summary.aidDistribution) {
-          this.createAidDistributionChart(summary.aidDistribution);
+      const canvas = document.getElementById('monthlyDonationsChart') as HTMLCanvasElement;
+      if (!canvas) {
+        console.warn('Canvas element not found');
+        return;
+      }
+
+      this.destroyChart(); // Détruire le graphique existant
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('Canvas context not available');
+        return;
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+      gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+      gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
+
+      this.monthlyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+          datasets: [{
+            label: 'Dons (DT)',
+            data: [18500, 22100, 19500, 27400, 25200, 31800, 28900, 34100, 31200, 37500, 34200, 41000],
+            borderColor: '#3b82f6',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: 'rgba(30, 41, 59, 0.95)',
+              titleColor: '#f1f5f9',
+              bodyColor: '#f1f5f9',
+              borderColor: '#475569',
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += new Intl.NumberFormat('fr-TN', {
+                      style: 'currency',
+                      currency: 'TND',
+                      minimumFractionDigits: 0
+                    }).format(context.parsed.y);
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#64748b',
+                font: {
+                  size: 12
+                }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(226, 232, 240, 0.5)'
+              },
+              ticks: {
+                color: '#64748b',
+                font: {
+                  size: 12
+                },
+                callback: function(value) {
+                  return new Intl.NumberFormat('fr-TN', {
+                    style: 'currency',
+                    currency: 'TND',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(Number(value));
+                }
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'nearest'
+          },
+          animations: {
+            tension: {
+              duration: 1000,
+              easing: 'linear'
+            }
+          }
         }
       });
     }, 100);
   }
 
-  private createMonthlyDonationsChart(chartData: any): void {
-    const canvas = document.getElementById('monthlyDonationsChart') as HTMLCanvasElement;
-    if (!canvas) return;
-    
+  private destroyChart(): void {
     if (this.monthlyChart) {
       this.monthlyChart.destroy();
+      this.monthlyChart = undefined;
     }
-
-    this.monthlyChart = new Chart(canvas, {
-      type: 'line',
-      data: chartData,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top'
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              display: true
-            },
-            ticks: {
-              callback: function(value: number | string) {
-                return Number(value).toLocaleString('fr-TN') + ' DT';
-              }
-            }
-          }
-        }
-      }
-    });
   }
 
-  private createAidDistributionChart(chartData: any): void {
-    const canvas = document.getElementById('aidDistributionChart') as HTMLCanvasElement;
-    if (!canvas) return;
-    
-    if (this.distributionChart) {
-      this.distributionChart.destroy();
-    }
+  private formatEventDate(date: Date): string {
+    const now = new Date();
+    const eventDate = new Date(date);
+    const diffTime = Math.abs(eventDate.getTime() - now.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    this.distributionChart = new Chart(canvas, {
-      type: 'doughnut',
-      data: chartData,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'right'
-          }
-        }
-      }
-    });
-  }
-
-  private loadMockData(): void {
-    // Données pour les événements
-    this.upcomingEvents = [
-      {
-        title: 'Distribution alimentaire',
-        date: new Date('2024-02-20'),
-        time: '09:00 - 12:00',
-        location: 'Centre Nord',
-        status: 'confirmed'
-      },
-      {
-        title: 'Réunion des bénévoles',
-        date: new Date('2024-02-22'),
-        time: '14:00 - 16:00',
-        location: 'Siège principal',
-        status: 'planned'
-      }
-    ];
-
-    // Données pour les familles récentes
-    this.recentFamilies = [
-      {
-        name: 'Famille Ben Salah',
-        members: 5,
-        location: 'Tunis',
-        status: 'active'
-      },
-      {
-        name: 'Famille Trabelsi',
-        members: 4,
-        location: 'Sousse',
-        status: 'pending'
-      }
-    ];
-
-    // Items de distribution
-    this.distributionItems = [
-      { label: 'Nourriture', value: 40, color: 'rgba(255, 99, 132, 0.6)' },
-      { label: 'Vêtements', value: 25, color: 'rgba(54, 162, 235, 0.6)' },
-      { label: 'Médicaments', value: 15, color: 'rgba(255, 206, 86, 0.6)' }
-    ];
+    if (diffDays === 0) return "Aujourd'hui";
+    if (diffDays === 1) return 'Demain';
+    return `Dans ${diffDays} jours`;
   }
 
   refreshData(): void {
     this.loadStatistics();
-    this.loadCharts();
+    this.loadUpcomingEvents();
+    
+    if (isPlatformBrowser(this.platformId)) {
+      this.destroyChart();
+      this.initChart();
+    }
   }
 
-  onTimeFilterChange(event: any): void {
-    console.log('Filter changed:', event.target.value);
-    // Implémenter la logique de filtrage
+  onPeriodChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const period = select.value;
+    
+    // Logique de filtrage selon la période
+    console.log('Période sélectionnée:', period);
+    
+    // Ici vous mettriez à jour les données du graphique
+    // selon la période sélectionnée
+  }
+
+  // Méthodes pour les actions rapides
+  addFamily(): void {
+    console.log('Ajouter une famille');
+    // Navigation vers la page d'ajout de famille
+  }
+
+  recordDonation(): void {
+    console.log('Enregistrer un don');
+    // Ouvrir un modal ou naviguer
+  }
+
+  distributeAid(): void {
+    console.log('Distribuer de l\'aide');
+    // Logique de distribution
+  }
+
+  generateReport(): void {
+    console.log('Générer un rapport');
+    // Générer et télécharger un rapport
+  }
+
+  scheduleEvent(): void {
+    console.log('Planifier un événement');
+    // Ouvrir un formulaire d'événement
+  }
+
+  manageInventory(): void {
+    console.log('Gérer le stock');
+    // Navigation vers l'inventaire
+  }
+
+  addEvent(): void {
+    console.log('Ajouter un événement');
+    // Ouvrir un formulaire d'événement
   }
 }
