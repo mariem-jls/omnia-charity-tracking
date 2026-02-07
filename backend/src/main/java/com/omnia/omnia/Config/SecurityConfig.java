@@ -41,10 +41,10 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/*", "/v3/api-docs/*").permitAll()
 
                         // Protected endpoints avec rôles
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/families/**").hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
-                        .requestMatchers("/api/visits/**").hasAnyRole("ADMIN", "COORDINATOR", "VOLUNTEER")
-                        .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "COORDINATOR")
+                        .requestMatchers("/api/admin/**").hasRole("Admin")
+                        .requestMatchers("/api/families/**").hasAnyRole("Admin", "Coordinator", "Volunteer")
+                        .requestMatchers("/api/visits/**").hasAnyRole("Admin", "Coordinator", "Volunteer")
+                        .requestMatchers("/api/dashboard/**").hasAnyRole("Admin", "Coordinator")
 
                         // Toutes les autres requêtes nécessitent authentification
                         .anyRequest().authenticated()
