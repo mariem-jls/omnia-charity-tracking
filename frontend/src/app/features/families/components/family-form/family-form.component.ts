@@ -5,7 +5,7 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 
 import { FamilyService } from '../../services/family.service';
-import { Family, PriorityLevel, FamilyCreateRequest, FamilyUpdateRequest } from '../../models/family.model';
+import { Family, PriorityLevel, FamilyCreateRequest, FamilyUpdateRequest } from '../../models/family.models';
 
 @Component({
   selector: 'app-family-form',

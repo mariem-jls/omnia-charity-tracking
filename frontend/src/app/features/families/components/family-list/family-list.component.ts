@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FamilyService } from '../../services/family.service';
-import { Family, PriorityLevel } from '../../models/family.model';
+import { Family, PriorityLevel } from '../../models/family.models';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';

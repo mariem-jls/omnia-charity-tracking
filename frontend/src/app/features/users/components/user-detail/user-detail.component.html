@@ -1,1 +1,117 @@
-<p>user-detail works!</p>
+<div class="user-detail-container">
+  <!-- En-tête avec bouton retour -->
+  <div class="detail-header">
+    <button class="back-button" (click)="goBack()">
+      <span class="back-icon">←</span> Retour à la liste
+    </button>
+    <h1>Détails de l'utilisateur</h1>
+    <div class="header-actions">
+      <button class="btn edit-btn" (click)="editUser()">✏️ Modifier</button>
+      <button class="btn delete-btn" (click)="deleteUser()">🗑️ Supprimer</button>
+    </div>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Chargement des détails...</p>
+    </div>
+  } @else if (user) {
+    <!-- Carte de détail de l'utilisateur -->
+    <div class="user-detail-card">
+      <!-- En-tête de la carte avec nom et statut -->
+      <div class="card-header">
+        <div class="user-avatar">
+          {{ getInitials() }}
+        </div>
+        <div class="user-title">
+          <h2>{{ user.name }}</h2>
+          <div class="user-meta">
+            <span class="badge" [class]="getRoleClass()">{{ user.role }}</span>
+            <span class="status-badge" [class]="getStatusClass()">
+              {{ getStatusText() }}
+            </span>
+          </div>
+        </div>
+        <button class="status-toggle" [class.active]="isActive()" (click)="toggleStatus()">
+          {{ getToggleButtonText() }}
+        </button>
+      </div>
+
+      <!-- Informations principales -->
+      <div class="card-body">
+        <div class="info-section">
+          <h3>Informations personnelles</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Email</span>
+              <span class="info-value">{{ getEmail() }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Téléphone</span>
+              <span class="info-value">{{ getPhone() }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date de création</span>
+              <span class="info-value">{{ getCreated() }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">ID Famille</span>
+              <span class="info-value">{{ getFamilyId() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Adresse -->
+        @if (user.address) {
+          <div class="info-section">
+            <h3>Adresse</h3>
+            <div class="info-item full-width">
+              <span class="info-label">Adresse complète</span>
+              <span class="info-value">{{ getAddress() }}</span>
+            </div>
+          </div>
+        }
+
+        <!-- Dernière connexion -->
+        <div class="info-section">
+          <h3>Activité</h3>
+          <div class="info-item">
+            <span class="info-label">Dernière connexion</span>
+            <span class="info-value">{{ getLastLogin() }}</span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        @if (user.notes) {
+          <div class="info-section">
+            <h3>Notes</h3>
+            <div class="notes-container">
+              <p>{{ getNotes() }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- Actions supplémentaires -->
+        <div class="actions-section">
+          <button class="btn action-btn message-btn">
+            📧 Envoyer un message
+          </button>
+          <button class="btn action-btn reset-btn">
+            🔄 Réinitialiser le mot de passe
+          </button>
+          <button class="btn action-btn logs-btn">
+              📋 Voir les journaux d'activité
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- Message si aucun utilisateur trouvé -->
+    <div class="no-data">
+      <p>Aucun utilisateur trouvé avec cet ID.</p>
+      <button class="btn back-btn" (click)="goBack()">Retour à la liste</button>
+    </div>
+  }
+</div>

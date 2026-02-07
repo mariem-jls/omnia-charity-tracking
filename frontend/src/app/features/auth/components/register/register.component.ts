@@ -40,7 +40,7 @@ export class RegisterComponent implements OnInit {
       phone: ['', [Validators.pattern('^[0-9]{8,}$')]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
-      role: [Role.VOLUNTEER, Validators.required]
+      role: [Role.Volunteer, Validators.required]
     }, {
       validators: this.passwordMatchValidator
     });

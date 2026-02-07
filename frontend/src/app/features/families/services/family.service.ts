@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Family, FamilyCreateRequest, FamilyUpdateRequest } from '../models/family.model';
+import { Family, FamilyCreateRequest, FamilyUpdateRequest } from '../models/family.models';
 
 @Injectable({
   providedIn: 'root'

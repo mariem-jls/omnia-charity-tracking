@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FamilyService } from '../../services/family.service';
-import { Family, PriorityLevel } from '../../models/family.model';
+import { Family, PriorityLevel } from '../../models/family.models';
 
 @Component({
   selector: 'app-family-detail',
