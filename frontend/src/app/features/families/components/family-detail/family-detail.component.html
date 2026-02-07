@@ -1,1 +1,271 @@
-<p>family-detail works!</p>
+<!-- features/families/components/family-detail/family-detail.component.html -->
+<div class="family-detail-container">
+  
+  <!-- En-tête avec navigation -->
+  <div class="detail-header">
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i> Retour
+    </button>
+    
+    <div class="header-title">
+      <h1>
+        <i class="fas fa-home-heart"></i>
+        Fiche Famille
+      </h1>
+      <p class="subtitle">Détails complets de la famille bénéficiaire</p>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn-action print" (click)="printDetails()" title="Imprimer">
+        <i class="fas fa-print"></i>
+      </button>
+      <button class="btn-action share" (click)="shareDetails()" title="Partager">
+        <i class="fas fa-share-alt"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner">
+      <i class="fas fa-spinner fa-spin fa-3x"></i>
+    </div>
+    <p>Chargement des détails de la famille...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-container">
+    <div class="error-content">
+      <i class="fas fa-exclamation-triangle fa-3x"></i>
+      <h3>Erreur de chargement</h3>
+      <p>{{ errorMessage }}</p>
+      <button (click)="goBack()" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+      </button>
+    </div>
+  </div>
+
+  <!-- Family Details -->
+  <div *ngIf="!isLoading && family" class="family-details">
+    
+    <!-- Carte d'identité -->
+    <div class="identity-card">
+      <div class="card-header">
+        <div class="family-ref">
+          <i class="fas fa-hashtag"></i>
+          <span>{{ family.reference }}</span>
+        </div>
+        <div class="family-status" [ngClass]="getStatusColor()">
+          {{ getFamilyStatus() }}
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <div class="identity-main">
+          <div class="avatar">
+            <i class="fas fa-users fa-3x"></i>
+          </div>
+          
+          <div class="identity-info">
+            <h2 class="family-name">
+              {{ family.headOfFamily }}
+            </h2>
+            
+            <div class="priority-badge" [ngClass]="priorityColors[family.priorityLevel]">
+              <i [class]="priorityIcons[family.priorityLevel]"></i>
+              {{ priorityLabels[family.priorityLevel] }}
+            </div>
+            
+            <div class="family-meta">
+              <span class="meta-item">
+                <i class="fas fa-users"></i>
+                {{ family.familySize || 0 }} membres
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-calendar-plus"></i>
+                Inscrite le {{ formatDateShort(family.createdAt) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informations principales -->
+    <div class="details-grid">
+      
+      <!-- Contact & Localisation -->
+      <div class="detail-section contact-section">
+        <div class="section-header">
+          <h3><i class="fas fa-address-card"></i> Contact & Localisation</h3>
+        </div>
+        
+        <div class="section-content">
+          <div class="info-group">
+            <div class="info-item">
+              <label><i class="fas fa-phone"></i> Téléphone</label>
+              <div class="info-value">
+                <span>{{ family.phone }}</span>
+                <button class="btn-copy" (click)="copyToClipboard(family.phone)" title="Copier">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <label><i class="fas fa-map-marker-alt"></i> Adresse</label>
+              <div class="info-value">
+                <span>{{ family.address }}</span>
+                <button class="btn-copy" (click)="copyToClipboard(family.address)" title="Copier">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="info-item" *ngIf="family.latitude && family.longitude">
+              <label><i class="fas fa-map"></i> Coordonnées GPS</label>
+              <div class="info-value">
+                <span>{{ family.latitude.toFixed(4) }}, {{ family.longitude.toFixed(4) }}</span>
+                <button class="btn-map" (click)="openMap()" title="Ouvrir dans Google Maps">
+                  <i class="fas fa-external-link-alt"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Situation familiale -->
+      <div class="detail-section situation-section">
+        <div class="section-header">
+          <h3><i class="fas fa-home"></i> Situation Familiale</h3>
+        </div>
+        
+        <div class="section-content">
+          <div class="info-group">
+            <div class="info-item">
+              <label>Nombre de membres</label>
+              <div class="info-value highlight">
+                {{ family.familySize || 0 }} personnes
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <label>Niveau de priorité</label>
+              <div class="info-value">
+                <span class="priority-display" [ngClass]="priorityColors[family.priorityLevel]">
+                  <i [class]="priorityIcons[family.priorityLevel]"></i>
+                  {{ priorityLabels[family.priorityLevel] }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Besoins spécifiques -->
+      <div class="detail-section needs-section">
+        <div class="section-header">
+          <h3><i class="fas fa-clipboard-list"></i> Besoins Spécifiques</h3>
+        </div>
+        
+        <div class="section-content">
+          <div class="needs-description" *ngIf="family.needsDescription">
+            <p>{{ family.needsDescription }}</p>
+          </div>
+          <div class="no-needs" *ngIf="!family.needsDescription">
+            <i class="fas fa-info-circle"></i>
+            <p>Aucune description de besoins spécifiée</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Types d'aide fréquents -->
+      <div class="detail-section aid-section" *ngIf="family.frequentAidTypes && family.frequentAidTypes.length > 0">
+        <div class="section-header">
+          <h3><i class="fas fa-hand-holding-heart"></i> Types d'Aide Fréquents</h3>
+        </div>
+        
+        <div class="section-content">
+          <div class="aid-types">
+            <div *ngFor="let aidType of family.frequentAidTypes" class="aid-type-item">
+              <i class="fas fa-check-circle"></i>
+              <span>{{ aidType.name }}</span>
+              <small *ngIf="aidType.description"> - {{ aidType.description }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes internes -->
+      <div class="detail-section notes-section" *ngIf="family.notes">
+        <div class="section-header">
+          <h3><i class="fas fa-sticky-note"></i> Notes Internes</h3>
+        </div>
+        
+        <div class="section-content">
+          <div class="notes-content">
+            <p>{{ family.notes }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métadonnées -->
+      <div class="detail-section metadata-section">
+        <div class="section-header">
+          <h3><i class="fas fa-history"></i> Historique</h3>
+        </div>
+        
+        <div class="section-content">
+          <div class="metadata">
+            <div class="meta-item">
+              <i class="fas fa-calendar-plus"></i>
+              <div>
+                <label>Créée le</label>
+                <span>{{ formatDate(family.createdAt) }}</span>
+              </div>
+            </div>
+            
+            <div class="meta-item" *ngIf="family.updatedAt">
+              <i class="fas fa-calendar-check"></i>
+              <div>
+                <label>Dernière mise à jour</label>
+                <span>{{ formatDate(family.updatedAt) }}</span>
+              </div>
+            </div>
+            
+            <div class="meta-item">
+              <i class="fas fa-id-card"></i>
+              <div>
+                <label>Référence</label>
+                <span class="reference">{{ family.reference }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-buttons">
+      <button class="btn btn-secondary" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Retour à la liste
+      </button>
+      
+      <div class="action-group">
+        <button class="btn btn-warning" (click)="editFamily()">
+          <i class="fas fa-edit"></i> Modifier
+        </button>
+        <button class="btn btn-danger" (click)="deleteFamily()">
+          <i class="fas fa-trash-alt"></i> Supprimer
+        </button>
+      </div>
+    </div>
+
+    <!-- Debug (optionnel) -->
+    <div class="debug-info" *ngIf="false">
+      <h4>Données JSON:</h4>
+      <pre>{{ family | json }}</pre>
+    </div>
+  </div>
+</div>
