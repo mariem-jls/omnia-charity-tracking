@@ -1,0 +1,23 @@
+spring.application.name=Omnia
+
+# DB Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/omnia?createDatabaseIfNotExist=true
+spring.datasource.username=root
+spring.datasource.password=
+
+# JPA Configuration
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# Configuration du serveur
+server.port=8080
+
+# Configuration JWT - IMPORTANT: utiliser app.jwt. comme préfixe
+app.jwt.secret=5Np8K9mQ2vX7wB3yC6fR4tH8jL1nM0pS3uD7gA5kE9oI2rT6vY1zW4xQ8bN3cM7fJ0hK5lP9sU2eR6tY1wX4zA8
+app.jwt.expiration=86400000
+app.jwt.refresh-token.expiration=604800000 # 7 jours
+# Logging
+logging.level.com.omnia.omnia=DEBUG
+logging.level.org.springframework.security=DEBUG
